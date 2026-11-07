@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Fire-Fetch — Download videos and audio from any link</title>
+  <meta name="description" content="Paste a link from YouTube, TikTok, Instagram, Facebook, X and more. Fire-Fetch gets you the video or audio file in seconds. Free, no sign-up.">
+  <meta name="theme-color" content="#000000">
+  <meta property="og:title" content="Fire-Fetch — Download videos and audio from any link">
+  <meta property="og:description" content="Paste a link. Get the file. YouTube, TikTok, Instagram, Facebook, X and more.">
+  <meta property="og:type" content="website">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;800;900&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <script defer src="app.js"></script>
+</head>
+<body>
+  <!-- Moving film grain over everything -->
+  <div class="grain" aria-hidden="true"></div>
+
+  <!-- Heat-haze filter used by the big wordmark -->
+  <svg class="defs" aria-hidden="true" focusable="false">
+    <filter id="heat" x="-10%" y="-20%" width="120%" height="140%">
+      <feTurbulence id="heatNoise" type="fractalNoise" baseFrequency="0.006 0.024" numOctaves="1" seed="3" result="noise"/>
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="5" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+  </svg>
+
+  <header class="topbar">
+    <a class="brand" href="#top" aria-label="Fire-Fetch home">
+      <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true">
+        <path d="M16 2c1.2 5.2 6.8 7.6 6.8 14.2A6.8 6.8 0 0 1 16 23a6.8 6.8 0 0 1-6.8-6.8c0-2.6 1.1-4.4 2.4-5.9.3 2 1.4 3.3 2.7 3.6C13 9.6 14.3 5.4 16 2Z" fill="currentColor"/>
+        <path d="M8 27h16" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
+      </svg>
+      <span>Fire-Fetch</span>
+    </a>
+    <nav class="nav" aria-label="Main">
+      <a href="#how">How it works</a>
+      <a href="#platforms">Platforms</a>
+      <a href="#faq">FAQ</a>
+    </nav>
+  </header>
+
+  <main id="top">
+    <section class="hero" aria-labelledby="hero-title">
+      <canvas class="embers" aria-hidden="true"></canvas>
+      <div class="spotlight" aria-hidden="true"></div>
+
+      <h1 id="hero-title" class="wordmark">
+        <span class="sr-only">Fire-Fetch: video and audio downloader</span>
+        <span class="wordmark-line" aria-hidden="true" data-text="FIRE">FIRE</span>
+        <span class="wordmark-line outline" aria-hidden="true" data-text="FETCH">FETCH</span>
+      </h1>
+
+      <p class="lede">
+        Paste a link from <span class="rotator" aria-live="off"><span class="rotator-word">YouTube</span></span>
+        and get the file in seconds.
+      </p>
+
+      <form class="fetcher" id="fetcher" novalidate>
+        <div class="fuse" id="fuse">
+          <label for="url" class="sr-only">Video or audio link</label>
+          <span class="platform-chip" id="platformChip" hidden></span>
+          <input id="url" name="url" type="url" inputmode="url" autocomplete="off" spellcheck="false"
+                 placeholder="Paste a video link here" required>
+          <button type="button" class="ghost-btn" id="pasteBtn">Paste</button>
+          <button type="button" class="icon-btn" id="clearBtn" aria-label="Clear link" hidden>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          </button>
+        </div>
+
+        <div class="controls">
+          <div class="modes" role="radiogroup" aria-label="What to download">
+            <button type="button" role="radio" class="mode" data-mode="auto" aria-checked="true">Video</button>
+            <button type="button" role="radio" class="mode" data-mode="audio" aria-checked="false">Audio only</button>
+            <button type="button" role="radio" class="mode" data-mode="mute" aria-checked="false">Silent video</button>
+            <span class="mode-thumb" aria-hidden="true"></span>
+          </div>
+
+          <div class="selects">
+            <label class="select" id="qualityWrap">
+              <span>Quality</span>
+              <select id="quality">
+                <option value="max">Best available</option>
+                <option value="2160">4K (2160p)</option>
+                <option value="1440">1440p</option>
+                <option value="1080" selected>1080p</option>
+                <option value="720">720p</option>
+                <option value="480">480p</option>
+                <option value="360">360p</option>
+              </select>
+            </label>
+            <label class="select" id="formatWrap" hidden>
+              <span>Format</span>
+              <select id="audioFormat">
+                <option value="mp3" selected>MP3</option>
+                <option value="best">Original</option>
+                <option value="opus">Opus</option>
+                <option value="ogg">OGG</option>
+                <option value="wav">WAV</option>
+              </select>
+            </label>
+            <label class="select" id="bitrateWrap" hidden>
+              <span>Bitrate</span>
+              <select id="audioBitrate">
+                <option value="320" selected>320 kbps</option>
+                <option value="256">256 kbps</option>
+                <option value="128">128 kbps</option>
+              </select>
+            </label>
+          </div>
+
+          <button type="submit" class="fire-btn" id="goBtn">
+            <span class="fire-btn-label">Download</span>
+            <span class="fire-btn-spinner" aria-hidden="true"></span>
+          </button>
+        </div>
+      </form>
+
+      <div class="result" id="result" aria-live="polite"></div>
+    </section>
+
+    <section class="platforms" id="platforms" aria-labelledby="platforms-title">
+      <h2 id="platforms-title" class="section-title">Works with the sites you use</h2>
+      <div class="marquee" aria-hidden="true">
+        <div class="marquee-track">
+          <span>YouTube</span><span>TikTok</span><span>Instagram</span><span>Facebook</span><span>X</span><span>Reddit</span><span>SoundCloud</span><span>Vimeo</span><span>Pinterest</span><span>Twitch</span><span>Snapchat</span><span>Bluesky</span><span>Dailymotion</span><span>Tumblr</span>
+          <span>YouTube</span><span>TikTok</span><span>Instagram</span><span>Facebook</span><span>X</span><span>Reddit</span><span>SoundCloud</span><span>Vimeo</span><span>Pinterest</span><span>Twitch</span><span>Snapchat</span><span>Bluesky</span><span>Dailymotion</span><span>Tumblr</span>
+        </div>
+      </div>
+      <p class="platform-list">YouTube, TikTok, Instagram, Facebook, X (Twitter), Reddit, SoundCloud, Vimeo, Pinterest, Twitch clips, Snapchat, Bluesky, Dailymotion, Tumblr and more.</p>
+    </section>
+
+    <section class="how" id="how" aria-labelledby="how-title">
+      <h2 id="how-title" class="section-title">How it works</h2>
+      <ol class="steps">
+        <li>
+          <span class="step-n" aria-hidden="true">1</span>
+          <h3>Copy the link</h3>
+          <p>Open the video or post, tap Share, then Copy link.</p>
+        </li>
+        <li>
+          <span class="step-n" aria-hidden="true">2</span>
+          <h3>Paste it here</h3>
+          <p>Fire-Fetch recognises the site and shows you a preview straight away.</p>
+        </li>
+        <li>
+          <span class="step-n" aria-hidden="true">3</span>
+          <h3>Pick and download</h3>
+          <p>Choose video, audio only or silent video, set the quality, and the file saves to your device.</p>
+        </li>
+      </ol>
+    </section>
+
+    <section class="history" id="historySection" aria-labelledby="history-title" hidden>
+      <div class="history-head">
+        <h2 id="history-title" class="section-title">Your recent links</h2>
+        <button type="button" class="ghost-btn" id="clearHistory">Clear list</button>
+      </div>
+      <ul class="history-list" id="historyList"></ul>
+      <p class="fine">This list is kept only in this browser.</p>
+    </section>
+
+    <section class="faq" id="faq" aria-labelledby="faq-title">
+      <h2 id="faq-title" class="section-title">Questions</h2>
+      <details>
+        <summary>Is Fire-Fetch free?</summary>
+        <p>Yes. There's no account, no sign-up and no limit on how many links you paste.</p>
+      </details>
+      <details>
+        <summary>Where does the file go?</summary>
+        <p>To your browser's normal downloads folder. On iPhone, open the Files app and look in Downloads.</p>
+      </details>
+      <details>
+        <summary>Do you keep my videos or links?</summary>
+        <p>No. Files stream straight to your device and nothing is stored on our side. Your recent links list lives only in your own browser and you can clear it anytime.</p>
+      </details>
+      <details>
+        <summary>Why did a link fail?</summary>
+        <p>Private posts, age-restricted videos, live streams and some region-locked content can't be fetched. Check that the link opens in a private browser window without logging in, then try again.</p>
+      </details>
+      <details>
+        <summary>Can I download a whole playlist?</summary>
+        <p>Not yet. Paste one video at a time. For photo carousels and slideshows, every item appears so you can save each one.</p>
+      </details>
+      <details>
+        <summary>What am I allowed to download?</summary>
+        <p>Only content you own, content you have permission to save, or content that's openly licensed. Respect creators and each platform's rules.</p>
+      </details>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-mark" aria-hidden="true">FIRE—FETCH</div>
+    <p>Fire-Fetch isn't affiliated with YouTube, TikTok, Meta, X or any other platform. Download only what you have the right to keep.</p>
+    <p class="fine">© <span id="year"></span> Fire-Fetch</p>
+  </footer>
+
+  <div class="toasts" id="toasts" aria-live="assertive"></div>
+</body>
+</html>

@@ -1,0 +1,7 @@
+{
+  "regions": ["iad1"],
+  "functions": {
+    "api/info.py": { "maxDuration": 60, "memory": 1024 },
+    "api/dl.js": { "maxDuration": 300 }
+  }
+}
